@@ -8,6 +8,7 @@ from app.models.transaction import Transaction
 from app.models.refund import Refund
 from app.models.risk_assessment import RiskAssessment
 from app.models.abuse_cluster import AbuseCluster
+from app.models.abuse_cluster_member import AbuseClusterMember
 from app.models.audit_event import AuditEvent
 
 __all__ = [

@@ -14,6 +14,8 @@ from app.models.ip_address import IPAddress
 from app.models.address import Address
 from app.models.payment_instrument import PaymentInstrument
 from app.models.transaction import Transaction
+from app.models.abuse_cluster import AbuseCluster
+from app.models.abuse_cluster_member import AbuseClusterMember
 
 from app.utils.synthetic_data import (
     generate_merchants,
@@ -37,6 +39,8 @@ def clear_database(db):
 
     print("Clearing existing seed data...")
 
+    db.execute(delete(AbuseClusterMember))
+    db.execute(delete(AbuseCluster))
     db.execute(delete(Transaction))
     db.execute(delete(PaymentInstrument))
     db.execute(delete(Address))
@@ -106,7 +110,7 @@ def seed_database():
 
         device_data = generate_devices(
             merchant_ids,
-            count=80,
+            count=150,
         )
 
         devices = [
@@ -125,7 +129,7 @@ def seed_database():
 
         ip_data = generate_ip_addresses(
             merchant_ids,
-            count=90,
+            count=150,
         )
 
         ip_addresses = [
@@ -144,7 +148,7 @@ def seed_database():
 
         address_data = generate_addresses(
             merchant_ids,
-            count=95,
+            count=150,
         )
 
         addresses = [
@@ -163,7 +167,7 @@ def seed_database():
 
         payment_data = generate_payment_instruments(
             merchant_ids,
-            count=100,
+            count=150,
         )
 
         payment_instruments = [

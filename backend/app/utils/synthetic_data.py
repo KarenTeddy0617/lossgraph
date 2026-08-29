@@ -201,74 +201,438 @@ def generate_transactions(
     ip_address_ids,
     address_ids,
     payment_instrument_ids,
-    count: int = NUM_TRANSACTIONS,
+    count=1000,
 ):
     """
-    Generate synthetic transaction records.
+    Generate realistic synthetic transactions.
 
-    The current version creates realistic transaction behaviour
-    and maintains the basic relationships required by LossGraph.
+    Dataset design:
+
+    1. Mostly normal transactions
+       - Customers usually reuse their own resources.
+       - A customer normally has one device/IP/address/payment.
+       - Small amounts of resource sharing can occur naturally.
+
+    2. Three deliberately injected abuse networks
+       - Multiple customers share the same device.
+       - Multiple customers share the same IP.
+       - Multiple customers share the same address.
+       - Multiple customers share the same payment instrument.
+       - Transactions have elevated amounts and behavioral risk.
+
+    This creates a meaningful graph:
+        Normal transactions -> weak connections
+        Abuse networks      -> dense connections
     """
 
     transactions = []
 
-    for i in range(count):
+    now = datetime.utcnow()
+
+    # =====================================================
+    # Configuration
+    # =====================================================
+
+    NETWORK_COUNT = 3
+    NETWORK_SIZE = 10
+
+    abuse_transaction_count = (
+        NETWORK_COUNT * NETWORK_SIZE
+    )
+
+    normal_count = count - abuse_transaction_count
+
+    # =====================================================
+    # Helper: realistic transaction timestamp
+    # =====================================================
+
+    def random_transaction_date():
+        days_ago = random.randint(0, 180)
+        hours_ago = random.randint(0, 23)
+        minutes_ago = random.randint(0, 59)
+
+        return (
+            now
+            - timedelta(days=days_ago)
+            - timedelta(hours=hours_ago)
+            - timedelta(minutes=minutes_ago)
+        )
+
+    # =====================================================
+    # Create a stable resource profile for each customer
+    # =====================================================
+    #
+    # Normal customers should NOT randomly receive a new
+    # device/IP/address/payment for every transaction.
+    #
+    # Instead, each customer gets a primary resource profile.
+    #
+    # This prevents the entire graph from becoming connected.
+    # =====================================================
+
+    customer_profiles = {}
+
+    for index, customer_id in enumerate(customer_ids):
+        customer_profiles[customer_id] = {
+        "device_id": device_ids[index],
+
+        "ip_address_id": ip_address_ids[index],
+
+        "address_id": address_ids[index],
+
+        "payment_instrument_id": payment_instrument_ids[index],
+    }
+
+    # =====================================================
+    # Helper: normal transaction
+    # =====================================================
+
+    def create_normal_transaction(index):
+
+        customer_id = random.choice(customer_ids)
+
+        profile = customer_profiles[customer_id]
+
+        # -------------------------------------------------
+        # Normal transactions mostly use the customer's
+        # established resources.
+        # -------------------------------------------------
+
+        device_id = profile["device_id"]
+        ip_address_id = profile["ip_address_id"]
+        address_id = profile["address_id"]
+        payment_instrument_id = profile[
+            "payment_instrument_id"
+        ]
+
+        # -------------------------------------------------
+        # Small amount of legitimate resource variation.
+        #
+        # This prevents the synthetic data from looking
+        # completely artificial.
+        # -------------------------------------------------
+
+        if random.random() < 0.05:
+            device_id = random.choice(device_ids)
+
+        if random.random() < 0.05:
+            ip_address_id = random.choice(
+                ip_address_ids
+            )
+
+        if random.random() < 0.03:
+            address_id = random.choice(
+                address_ids
+            )
+
+        if random.random() < 0.03:
+            payment_instrument_id = random.choice(
+                payment_instrument_ids
+            )
+
+        # -------------------------------------------------
+        # Normal amount
+        # -------------------------------------------------
+
+        amount = Decimal(
+            str(
+                round(
+                    random.uniform(
+                        100,
+                        15000,
+                    ),
+                    2,
+                )
+            )
+        )
+
+        # -------------------------------------------------
+        # Normal status
+        # -------------------------------------------------
 
         status = random.choices(
-            ["SUCCESS", "FAILED", "PENDING"],
-            weights=[85, 10, 5],
+            [
+                "SUCCESS",
+                "FAILED",
+                "PENDING",
+            ],
+            weights=[
+                88,
+                8,
+                4,
+            ],
             k=1,
         )[0]
 
-        chargeback = random.random() < 0.04
+        # -------------------------------------------------
+        # Normal chargeback probability
+        # -------------------------------------------------
+
+        chargeback = random.random() < 0.015
+
+        # -------------------------------------------------
+        # Normal refund probability
+        # -------------------------------------------------
 
         refund_status = None
 
         if status == "SUCCESS":
+
             refund_status = random.choices(
-                ["NONE", "REQUESTED", "REFUNDED"],
-                weights=[88, 5, 7],
+                [
+                    "NONE",
+                    "REQUESTED",
+                    "REFUNDED",
+                ],
+                weights=[
+                    93,
+                    3,
+                    4,
+                ],
                 k=1,
             )[0]
 
+        return {
+            "transaction_code": (
+                f"TXN_{index:06d}"
+            ),
+
+            "merchant_id": random.choice(
+                merchant_ids
+            ),
+
+            "customer_id": customer_id,
+
+            "device_id": device_id,
+
+            "ip_address_id": ip_address_id,
+
+            "address_id": address_id,
+
+            "payment_instrument_id": (
+                payment_instrument_id
+            ),
+
+            "amount": amount,
+
+            "status": status,
+
+            "refund_status": refund_status,
+
+            "chargeback": chargeback,
+
+            "created_at": random_transaction_date(),
+        }
+
+    # =====================================================
+    # 1. Generate normal transactions
+    # =====================================================
+
+    for i in range(
+        1,
+        normal_count + 1,
+    ):
+
         transactions.append(
-            {
-                "transaction_code": f"TXN_{i + 1:06d}",
-
-                "merchant_id": random.choice(
-                    merchant_ids
-                ),
-
-                "customer_id": random.choice(
-                    customer_ids
-                ),
-
-                "device_id": random.choice(
-                    device_ids
-                ),
-
-                "ip_address_id": random.choice(
-                    ip_address_ids
-                ),
-
-                "address_id": random.choice(
-                    address_ids
-                ),
-
-                "payment_instrument_id": random.choice(
-                    payment_instrument_ids
-                ),
-
-                "amount": random_amount(),
-
-                "status": status,
-
-                "refund_status": refund_status,
-
-                "chargeback": chargeback,
-
-                "created_at": random_date(180),
-            }
+            create_normal_transaction(i)
         )
+
+    # =====================================================
+    # 2. Inject three abuse networks
+    # =====================================================
+    #
+    # Each network contains 10 different customers.
+    #
+    # Those customers deliberately share:
+    #
+    #   - device
+    #   - IP
+    #   - address
+    #   - payment instrument
+    #
+    # This produces a dense graph component.
+    # =====================================================
+
+    for network_index in range(
+        NETWORK_COUNT
+    ):
+
+        # -------------------------------------------------
+        # Select customers
+        # -------------------------------------------------
+
+        start = (
+            network_index
+            * NETWORK_SIZE
+        )
+
+        customer_group = customer_ids[
+            start:start + NETWORK_SIZE
+        ]
+
+        if len(customer_group) < NETWORK_SIZE:
+            break
+
+        # -------------------------------------------------
+        # Shared resources
+        # -------------------------------------------------
+
+        shared_device = device_ids[
+            network_index
+        ]
+
+        shared_ip = ip_address_ids[
+            network_index
+        ]
+
+        shared_address = address_ids[
+            network_index
+        ]
+
+        shared_payment = payment_instrument_ids[
+            network_index
+        ]
+
+        # -------------------------------------------------
+        # Assign the network to a merchant
+        # -------------------------------------------------
+
+        merchant_id = merchant_ids[
+            network_index
+            % len(merchant_ids)
+        ]
+
+        # -------------------------------------------------
+        # Generate abuse transactions
+        # -------------------------------------------------
+
+        for transaction_index in range(
+            NETWORK_SIZE
+        ):
+
+            customer_id = customer_group[
+                transaction_index
+            ]
+
+            global_index = (
+                normal_count
+                + (
+                    network_index
+                    * NETWORK_SIZE
+                )
+                + transaction_index
+                + 1
+            )
+
+            # ---------------------------------------------
+            # Suspiciously high amounts
+            # ---------------------------------------------
+
+            amount = Decimal(
+                str(
+                    round(
+                        random.uniform(
+                            15000,
+                            75000,
+                        ),
+                        2,
+                    )
+                )
+            )
+
+            # ---------------------------------------------
+            # Abuse transactions mostly succeed
+            # ---------------------------------------------
+
+            status = random.choices(
+                [
+                    "SUCCESS",
+                    "FAILED",
+                ],
+                weights=[
+                    95,
+                    5,
+                ],
+                k=1,
+            )[0]
+
+            # ---------------------------------------------
+            # High chargeback probability
+            # ---------------------------------------------
+
+            chargeback = (
+                random.random()
+                < 0.25
+            )
+
+            # ---------------------------------------------
+            # High refund probability
+            # ---------------------------------------------
+
+            refund_status = None
+
+            if status == "SUCCESS":
+
+                refund_status = random.choices(
+                    [
+                        "NONE",
+                        "REQUESTED",
+                        "REFUNDED",
+                    ],
+                    weights=[
+                        45,
+                        10,
+                        45,
+                    ],
+                    k=1,
+                )[0]
+
+            transactions.append(
+                {
+                    "transaction_code": (
+                        f"TXN_{global_index:06d}"
+                    ),
+
+                    "merchant_id": merchant_id,
+
+                    "customer_id": customer_id,
+
+                    # ---------------------------------
+                    # DELIBERATELY SHARED RESOURCES
+                    # ---------------------------------
+
+                    "device_id": shared_device,
+
+                    "ip_address_id": shared_ip,
+
+                    "address_id": shared_address,
+
+                    "payment_instrument_id": (
+                        shared_payment
+                    ),
+
+                    "amount": amount,
+
+                    "status": status,
+
+                    "refund_status": (
+                        refund_status
+                    ),
+
+                    "chargeback": chargeback,
+
+                    "created_at": (
+                        random_transaction_date()
+                    ),
+                }
+            )
+
+    # =====================================================
+    # 3. Shuffle transactions
+    # =====================================================
+
+    random.shuffle(
+        transactions
+    )
 
     return transactions
