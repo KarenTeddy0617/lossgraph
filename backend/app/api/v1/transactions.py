@@ -1,15 +1,59 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.db.session import get_db
+from app.db.session import SessionLocal
 from app.models.transaction import Transaction
 from app.ml.predict import predict_transaction
-
 
 router = APIRouter(
     prefix="/transactions",
     tags=["Transactions"],
 )
+
+def get_db():
+    db = SessionLocal()
+
+    try:
+        yield db
+    finally:
+        db.close()
+# =========================================================
+# Get all transactions
+# =========================================================
+
+@router.get("/")
+def get_transactions(
+    db: Session = Depends(get_db),
+):
+    transactions = (
+        db.query(Transaction)
+        .order_by(Transaction.id)
+        .all()
+    )
+
+    return transactions
+# =========================================================
+# Get single transaction
+# =========================================================
+
+@router.get("/{transaction_id}")
+def get_transaction(
+    transaction_id: int,
+    db: Session = Depends(get_db),
+):
+    transaction = (
+        db.query(Transaction)
+        .filter(Transaction.id == transaction_id)
+        .first()
+    )
+
+    if transaction is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Transaction not found",
+        )
+
+    return transaction
 
 
 # =========================================================
@@ -42,6 +86,7 @@ def get_transaction_risk(
             status_code=404,
             detail="Transaction not found.",
         )
+    
 
     # -----------------------------------------------------
     # Predict abuse probability
@@ -52,6 +97,8 @@ def get_transaction_risk(
         transaction,
     )
 
+    '''
+
     # -----------------------------------------------------
     # Convert probability into classification
     # -----------------------------------------------------
@@ -60,6 +107,7 @@ def get_transaction_risk(
         prediction = "ABUSE"
     else:
         prediction = "NORMAL"
+    '''
 
     # -----------------------------------------------------
     # Return API response
@@ -73,5 +121,9 @@ def get_transaction_risk(
             risk_score * 100,
             2,
         ),
-        "prediction": prediction,
+        "prediction": (
+           "ABUSE"
+            if risk_score >= 0.5
+            else "NORMAL" 
+        ),
     }

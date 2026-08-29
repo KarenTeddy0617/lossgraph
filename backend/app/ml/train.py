@@ -1,3 +1,5 @@
+import json
+from pathlib import Path
 from sklearn.metrics import (
     classification_report,
     confusion_matrix,
@@ -161,6 +163,114 @@ def train_model():
         print(
             f"ROC-AUC: {auc:.4f}"
         )
+    
+        # -------------------------------------------------
+        # Save evaluation results
+        # -------------------------------------------------
+
+        report = classification_report(
+            y_test,
+            predictions,
+            target_names=[
+                "NORMAL",
+                "ABUSE",
+            ],
+            output_dict=True,
+            zero_division=0,
+        )
+
+        accuracy = report["accuracy"]
+
+        evaluation_results = {
+            "accuracy": round(
+                accuracy,
+                4,
+            ),
+
+            "roc_auc": round(
+                float(auc),
+                4,
+            ),
+
+            "precision": round(
+                report["ABUSE"]["precision"],
+                4,
+            ),
+
+            "recall": round(
+                report["ABUSE"]["recall"],
+                4,
+            ),
+
+            "f1_score": round(
+                report["ABUSE"]["f1-score"],
+                4,
+            ),
+
+            "normal": {
+                "precision": round(
+                    report["NORMAL"]["precision"],
+                    4,
+                ),
+                "recall": round(
+                    report["NORMAL"]["recall"],
+                    4,
+                ),
+                "f1_score": round(
+                    report["NORMAL"]["f1-score"],
+                    4,
+                ),
+                "support": int(
+                    report["NORMAL"]["support"]
+                ),
+            },
+
+            "abuse": {
+                "precision": round(
+                    report["ABUSE"]["precision"],
+                    4,
+                ),
+                "recall": round(
+                    report["ABUSE"]["recall"],
+                    4,
+                ),
+                "f1_score": round(
+                    report["ABUSE"]["f1-score"],
+                    4,
+                ),
+                "support": int(
+                    report["ABUSE"]["support"]
+                ),
+            },
+        }
+
+        evaluation_path = (
+            Path(__file__).resolve().parent
+            / "saved"
+            / "evaluation.json"
+        )
+
+        evaluation_path.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        with open(
+            evaluation_path,
+            "w",
+            encoding="utf-8",
+        ) as file:
+            json.dump(
+                evaluation_results,
+                file,
+                indent=4,
+            )
+
+        print()
+        print(
+            f"Evaluation saved to: {evaluation_path}"
+        )
+
 
         # -------------------------------------------------
         # Feature importance
