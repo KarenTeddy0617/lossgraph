@@ -101,13 +101,20 @@ def calculate_graph_score(
     transaction: Transaction,
 ) -> float:
     """
-    Compatibility wrapper for scoring one transaction.
+    Calculate graph score for one transaction while
+    considering the complete transaction graph.
     """
+    transactions = (
+        db.query(Transaction)
+        .order_by(Transaction.id)
+        .all()
+    )
 
-    features = calculate_all_graph_features(
+    all_features = calculate_all_graph_features(
         db,
-        [transaction],
-    )[transaction.id]
+        transactions,
+    )
+    features = all_features[transaction.id]
 
     return calculate_graph_score_from_features(features)
 

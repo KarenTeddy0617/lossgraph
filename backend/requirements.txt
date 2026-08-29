@@ -19,3 +19,6 @@ pytest
 pytest-asyncio
 
 networkx
+
+scikit-learn
+joblib
