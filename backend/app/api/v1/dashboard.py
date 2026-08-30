@@ -3,9 +3,10 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.db.session import SessionLocal
+from app.db.session import get_db
 from app.models.transaction import Transaction
 from app.graph.clustering import find_suspicious_clusters
+from app.api.v1.auth import get_current_user
 
 
 router = APIRouter(
@@ -18,13 +19,7 @@ router = APIRouter(
 # Database Dependency
 # =========================================================
 
-def get_db():
-    db = SessionLocal()
 
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 # =========================================================
@@ -34,6 +29,7 @@ def get_db():
 @router.get("/overview")
 def get_dashboard_overview(
     db: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
 ):
     """
     Return the main LossGraph dashboard statistics.
