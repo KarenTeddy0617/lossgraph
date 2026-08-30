@@ -10,6 +10,8 @@ from app.models.risk_assessment import RiskAssessment
 from app.models.abuse_cluster import AbuseCluster
 from app.models.abuse_cluster_member import AbuseClusterMember
 from app.models.audit_event import AuditEvent
+from app.models.user import User
+
 
 __all__ = [
     "Merchant",
@@ -22,5 +24,7 @@ __all__ = [
     "Refund",
     "RiskAssessment",
     "AbuseCluster",
+    "AbuseClusterMember",
     "AuditEvent",
+    "User",
 ]

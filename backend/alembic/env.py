@@ -20,7 +20,7 @@ from app.models.refund import Refund
 from app.models.abuse_cluster import AbuseCluster
 from app.models.risk_assessment import RiskAssessment
 from app.models.audit_event import AuditEvent
-
+from app.models.user import User
 
 config = context.config
 
