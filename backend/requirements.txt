@@ -24,3 +24,4 @@ networkx
 scikit-learn
 joblib
 email-validator
+google-genai

@@ -7,7 +7,7 @@ from app.api.v1.evaluation import router as evaluation_router
 from app.api.v1.webhooks import router as webhooks_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.audit import router as audit_router
-
+from app.api.v1.agent import router as agent_router
 
 router = APIRouter()
 
@@ -35,4 +35,7 @@ router.include_router(
 )
 router.include_router(
     audit_router
+)
+router.include_router(
+    agent_router
 )
