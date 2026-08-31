@@ -34,7 +34,6 @@ def get_transaction(
         "status": transaction.status,
         "refund_status": transaction.refund_status,
         "chargeback": transaction.chargeback,
-        "is_abuse": transaction.is_abuse,
         "created_at": transaction.created_at.isoformat(),
     }
 
