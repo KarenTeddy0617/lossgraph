@@ -244,3 +244,114 @@ td button {
   color: white;
   cursor: pointer;
 }
+/* AI Investigation */
+
+.agent-card {
+  margin-top: 20px;
+}
+
+.agent-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.agent-header h2 {
+  margin-bottom: 6px;
+}
+
+.agent-header p {
+  margin-top: 0;
+  color: #666;
+}
+
+.agent-header button {
+  white-space: nowrap;
+}
+
+.agent-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.agent-summary-grid > div,
+.signal-grid > div {
+  padding: 16px;
+  background: #f5f6f8;
+  border-radius: 6px;
+}
+
+.agent-summary-grid span,
+.signal-grid span {
+  display: block;
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.agent-summary-grid strong,
+.signal-grid strong {
+  font-size: 18px;
+}
+
+.agent-section {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.agent-section h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.agent-reasons {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.agent-reasons li {
+  margin-bottom: 8px;
+}
+
+.signal-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.status-review {
+  color: #ef6c00;
+  font-weight: bold;
+}
+
+.risk-low {
+  color: #2e7d32;
+}
+
+.risk-medium {
+  color: #ef6c00;
+}
+
+.risk-high {
+  color: #d84315;
+}
+
+.risk-critical {
+  color: #c62828;
+}
+
+@media (max-width: 900px) {
+  .agent-summary-grid,
+  .signal-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .agent-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
