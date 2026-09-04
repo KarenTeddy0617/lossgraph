@@ -1,7 +1,14 @@
+import {
+  BrowserRouter,
+  Navigate,
+  NavLink,
+  Outlet,
+  Route,
+  Routes,
+  useNavigate,
+} from "react-router-dom";
 
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-
-import { AuthProvider, useAuth } from "./context/AuthContext";
+import { useAuth } from "./context/AuthContext";
 
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -11,12 +18,10 @@ import ClusterExplorer from "./pages/ClusterExplorer";
 import AuditTrail from "./pages/AuditTrail";
 import Evaluation from "./pages/Evaluation";
 
-function ProtectedRoute({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const { user, loading } = useAuth();
+
+function ProtectedLayout() {
+  const { user, loading, logout } = useAuth();
+  const navigate = useNavigate();
 
   if (loading) {
     return <div>Loading...</div>;
@@ -26,98 +31,158 @@ function ProtectedRoute({
     return <Navigate to="/login" replace />;
   }
 
-  return children;
-}
+  function handleLogout() {
+    logout();
+    navigate("/login");
+  }
 
-function AppRoutes() {
   return (
-    <Routes>
-      {/* Login */}
-      <Route path="/login" element={<Login />} />
+    <div className="app-layout">
 
-      {/* Dashboard */}
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
+      {/* Sidebar */}
 
-      {/* Transactions */}
-      <Route
-        path="/transactions"
-        element={
-          <ProtectedRoute>
-            <Transactions />
-          </ProtectedRoute>
-        }
-      />
+      <aside className="sidebar">
 
-      {/* Transaction Details */}
-      <Route
-        path="/transactions/:transactionId"
-        element={
-          <ProtectedRoute>
-            <TransactionDetail />
-          </ProtectedRoute>
-        }
-      />
+        <h2>LossGraph</h2>
 
-      {/* Abuse Clusters */}
-      <Route
-        path="/clusters"
-        element={
-          <ProtectedRoute>
-            <ClusterExplorer />
-          </ProtectedRoute>
-        }
-      />
+        <nav>
 
-      {/* Unknown route */}
-      <Route
-        path="*"
-        element={<Navigate to="/dashboard" replace />}
-      />
+          <NavLink
+            to="/dashboard"
+            className={({ isActive }) =>
+              isActive ? "active" : ""
+            }
+          >
+            Dashboard
+          </NavLink>
 
-      <Route
-  path="/audit"
-  element={
-    <ProtectedRoute>
-      <AuditTrail />
-    </ProtectedRoute>
-  }
-/>
-      <Route
-        path="/evaluation"
-        element={
-          <ProtectedRoute>
-            <Evaluation />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-  path="/evaluation"
-  element={
-    <ProtectedRoute>
-      <Evaluation />
-    </ProtectedRoute>
-  }
-/>
-    </Routes>
+          <NavLink
+            to="/transactions"
+            className={({ isActive }) =>
+              isActive ? "active" : ""
+            }
+            end
+          >
+            Transactions
+          </NavLink>
+
+          <NavLink
+            to="/clusters"
+            className={({ isActive }) =>
+              isActive ? "active" : ""
+            }
+          >
+            Clusters
+          </NavLink>
+
+          <NavLink
+            to="/evaluation"
+            className={({ isActive }) =>
+              isActive ? "active" : ""
+            }
+          >
+            Evaluation
+          </NavLink>
+
+          <NavLink
+            to="/audit"
+            className={({ isActive }) =>
+              isActive ? "active" : ""
+            }
+          >
+            Audit Trail
+          </NavLink>
+
+        </nav>
+
+        <button
+          className="logout-button"
+          onClick={handleLogout}
+        >
+          Logout
+        </button>
+
+      </aside>
+
+
+      {/* Page Content */}
+
+      <div className="page-area">
+        <Outlet />
+      </div>
+
+    </div>
   );
 }
+
 
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
+
+      <Routes>
+
+        {/* Login */}
+
+        <Route
+          path="/login"
+          element={<Login />}
+        />
+
+
+        {/* Protected application */}
+
+        <Route element={<ProtectedLayout />}>
+
+          <Route
+            path="/dashboard"
+            element={<Dashboard />}
+          />
+
+          <Route
+            path="/transactions"
+            element={<Transactions />}
+          />
+
+          <Route
+            path="/transactions/:transactionId"
+            element={<TransactionDetail />}
+          />
+
+          <Route
+            path="/clusters"
+            element={<ClusterExplorer />}
+          />
+
+          <Route
+            path="/evaluation"
+            element={<Evaluation />}
+          />
+
+          <Route
+            path="/audit"
+            element={<AuditTrail />}
+          />
+
+        </Route>
+
+
+        {/* Unknown route */}
+
+        <Route
+          path="*"
+          element={
+            <Navigate
+              to="/dashboard"
+              replace
+            />
+          }
+        />
+
+      </Routes>
+
     </BrowserRouter>
   );
 }
 
 export default App;
-

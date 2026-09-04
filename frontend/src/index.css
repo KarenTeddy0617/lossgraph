@@ -82,6 +82,7 @@ input {
 
 .sidebar {
   width: 220px;
+  flex-shrink: 0;
   background: #20242b;
   color: white;
   padding: 24px 16px;
@@ -100,7 +101,7 @@ input {
   gap: 8px;
 }
 
-.sidebar nav button,
+.sidebar nav a,
 .logout-button {
   text-align: left;
   padding: 10px;
@@ -109,15 +110,25 @@ input {
   background: transparent;
   color: white;
   cursor: pointer;
+  text-decoration: none;
+  display: block;
 }
 
-.sidebar nav button:hover,
+.sidebar nav a:hover,
 .logout-button:hover {
+  background: #343a43;
+}
+.sidebar nav a.active {
   background: #343a43;
 }
 
 .logout-button {
   margin-top: auto;
+}
+
+.page-area {
+  flex: 1;
+  min-width: 0;
 }
 
 .main-content {
