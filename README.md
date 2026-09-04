@@ -1,7 +1,22 @@
-LossGraph
-AI-Powered Payment Abuse Detection & Investigation
+LossGraph: AI-Powered Payment Abuse Detection & Investigation
 
 Fraud rarely happens one transaction at a time. LossGraph combines machine-learning risk scoring with graph intelligence to uncover the networks behind suspicious payments, investigate coordinated abuse, and turn risk signals into actionable decisions.
+
+### Product Preview
+### Dashboard
+![LossGraph Dashboard](screenshots/dashboard.png)
+
+### Transaction Detail
+![LossGraph Evaluation](screenshots/transaction_detail.png)
+
+### Transaction Investigation
+![LossGraph Investigation](screenshots/investigation.png)
+
+### Cluster Explorer
+![LossGraph Clusters](screenshots/clusters.png)
+
+### Audit Trail
+![LossGraph Evaluation](screenshots/audit_trail.png)
 
 The Problem
 
